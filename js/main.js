@@ -4,9 +4,9 @@ mapboxgl.accessToken ='pk.eyJ1Ijoia25lbDIiLCJhIjoiY21rdTlkYmx5MThyZjNmcHVrMDYzdX
 let map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/dark-v10',
-    zoom: 5,
+    zoom: 7,
     minZoom: 5,
-    center: [47.7511, 120.7]
+    center: [-120.7401, 47.7511]
 });
 
 const grades = [4,5,6],
