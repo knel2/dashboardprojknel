@@ -9,33 +9,36 @@ let map = new mapboxgl.Map({
     center: [-120.7401, 47.7511]
 });
 
-const grades = [4,5,6],
+let firesChart = null;
+    magnitude = {},
+    numFires = 0
+
+console.log("hi")
+
+const grades = [10,50,300],
 colors = ['rgb(208,209,230)', 'rgb(103,169,207)', 'rgb(1,108,89)'],
 radii = [5, 10, 20]
 
-const legend = document.getElementById('legend');
+// const legend = document.getElementById('legend');
 
-let labels = ['<strong>Magnitude</strong>'],vbreak;
+// let labels = ['<strong>Magnitude</strong>'],vbreak;
 
-for(var i = 0; i < grades.length; i++) {
-    console.log("hi")
-    vbreak = grades[i];
-    dot_radii = 2 * radii[i];
-    labels.push(
-        '<p class = "break"><i class = "dot" style = "background"' + colors[i] + '; width: ' + dot_radii +
-        'px; height: ' + dot_radii + 'px; "> <span class = "dot-label" style = "top: ' + dot_radii / 2 + 'px;"' + vbreak + '</span></p>');
+// for(var i = 0; i < grades.length; i++) {
 
-    }
+//     vbreak = grades[i];
+//     dot_radii = 2 * radii[i];
+//     labels.push(
+//         '<p class = "break"><i class = "dot" style = "background"' + colors[i] + '; width: ' + dot_radii +
+//         'px; height: ' + dot_radii + 'px; "> <span class = "dot-label" style = "top: ' + dot_radii / 2 + 'px;"' + vbreak + '</span></p>');
 
+//     }
 
 async function geojsonFetch() {
-
     let response;
     response = await fetch('assets/DNR_Fire_Statistics_2008-Present.geojson');
     fires = await response.json();
-
-
     map.on('load', () => {
+
         map.addSource('fires', {
             type: 'geojson',
             data: fires
@@ -81,15 +84,111 @@ async function geojsonFetch() {
                 .addTo(map);
         });
 
+        magnitudes = calFires(fires, map.getBounds());
 
 
+        numFires = magnitudes[10] + magnitudes[50] + magnitudes[300];
+        console.log(numFires)
+        console.log(magnitudes[300])
+        console.log(numFires)
+
+        x = Object.keys(magnitudes);
+        x.unshift('ACRES_BURNED');
+
+        document.getElementById('fires-count').innerHTML = numFires
+        y = Object.keys(magnitudes);
+        y.unshift('#')
+
+        firesChart = c3.generate({
+
+            size: {
+                height: 350,
+                width: 460
+            },
+            data: {
+                x: 'ACRES_BURNED',
+                columns: [x , y],
+                type: 'bar',
+                colors: {
+                    '#': (d) => {
+                        console.log(x)
+                        return colors[d['x']];
+                    }
+                },
+            onclick: function (d) {
+                    let floor = parseInt(x[1 + d["x"]]),
+                        ceiling = floor + 1;
+                    map.setFilter('fires-point',
+                        ['all',
+                            ['>=', 'ACRES_BURNED', floor],
+                            ['<', 'ACRES_BURNED', ceiling]
+                        ]);
+                }
+            },
+            axis: {
+                x: { //magnitude
+                    type: 'category',
+                },
+                y: { //count
+                    tick: {
+                        values: [10, 20, 30, 40]
+                    }
+                }
+            },
+            legend: {
+                show: false
+            },
+            bindto: "#fires-chart" //bind the chart to the place holder element "earthquake-chart".
+        // });
+
+        })
+
+        map.on('idle', () => { //simplifying the function statement: arrow with brackets to define a function
+
+        magnitudes = calFires(fires, map.getBounds());
+        numFires = magnitudes[10] + magnitudes[50] + magnitudes[300];
+        document.getElementById("fires-count").innerHTML = numFires;
 
 
+        x = Object.keys(magnitudes);
+        x.unshift("ACRES_BURNED")
+        y = Object.values(magnitudes);
+        y.unshift("#")
+
+        // after finishing each map reaction, the chart will be rendered in case the current bbox changes.
+        firesChart.load({
+            columns: [x, y]
+        });
     });
-
-
-
-
+    });
 }
 
 geojsonFetch();
+
+function calFires(currentFires, currentMapBounds) {
+    console.log("hi")
+    let fireClasses = {
+        10: 0,
+        50: 0,
+        300: 0
+    };
+    currentFires.features.forEach(function (d) {
+        if (currentMapBounds.contains(d.geometry.coordinates)) {
+                //  console.log(d.properties.ACRES_BURNED)
+            fireClasses[Math.floor(d.properties.ACRES_BURNED)] += 1;
+
+        }
+
+    })
+    return fireClasses;
+}
+
+const reset = document.getElementById('reset');
+reset.addEventListener('click', event => {
+    map.flyTo({
+        zoom: 5,
+        center: [-120.7401, 47.7511]
+    })
+
+    map.setFilter('fires-point', null);
+})

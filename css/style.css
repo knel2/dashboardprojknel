@@ -38,7 +38,18 @@
   font-family: "Ubuntu", sans-serif;
 }
 
+#title-map span {
+  font-size: 18px;
+  float: right;
+  margin-right: 5px;
+  color:#fff;
+}
+
 #name {
   font-size: 20px;
   font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+#fires-chart {
+  top: 20px;
 }
