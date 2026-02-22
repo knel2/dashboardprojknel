@@ -13,7 +13,6 @@ let firesChart = null;
     magnitude = {},
     numFires = 0
 
-console.log("hi")
 
 const grades = [10,50,300],
 colors = ['rgb(208,209,230)', 'rgb(103,169,207)', 'rgb(1,108,89)'],
@@ -76,21 +75,26 @@ async function geojsonFetch() {
         );
 
 
-        map.on('click', 'fires-point', (event) => {
+        map.on('click', 'fire-point', (event) => {
             new mapboxgl.Popup()
+                //console.log(event.features[0].geometry.coordinates)
                 .setLngLat(event.features[0].geometry.coordinates)
-                console.log(event.features[0].geometry.coordinates)
+
+                // console.log(event.features[0].properties.ACRES_BURNED)
                 .setHTML(`<strong>Magnitude:</strong> ${event.features[0].properties.ACRES_BURNED}`)
-                .addTo(map);
+                .addTo(map)
         });
 
         magnitudes = calFires(fires, map.getBounds());
-
+        console.log(magnitudes);
 
         numFires = magnitudes[10] + magnitudes[50] + magnitudes[300];
-        console.log(numFires)
+        console.log(magnitudes[10])
+        console.log(magnitudes[50])
         console.log(magnitudes[300])
         console.log(numFires)
+        // console.log(magnitudes[300])
+        // console.log(numFires)
 
         x = Object.keys(magnitudes);
         x.unshift('ACRES_BURNED');
@@ -98,7 +102,8 @@ async function geojsonFetch() {
         document.getElementById('fires-count').innerHTML = numFires
         y = Object.keys(magnitudes);
         y.unshift('#')
-
+        console.log(x)
+        console.log(y);
         firesChart = c3.generate({
 
             size: {
@@ -106,41 +111,23 @@ async function geojsonFetch() {
                 width: 460
             },
             data: {
-                x: 'ACRES_BURNED',
-                columns: [x , y],
-                type: 'bar',
+                columns: [["Proportion10", magnitudes[10]],
+                        ["Proportion50", magnitudes[50]],
+                        ["Proportion300", magnitudes[300]]
+                ],
+
+                type: 'pie',
                 colors: {
                     '#': (d) => {
-                        console.log(x)
                         return colors[d['x']];
                     }
-                },
-            onclick: function (d) {
-                    let floor = parseInt(x[1 + d["x"]]),
-                        ceiling = floor + 1;
-                    map.setFilter('fires-point',
-                        ['all',
-                            ['>=', 'ACRES_BURNED', floor],
-                            ['<', 'ACRES_BURNED', ceiling]
-                        ]);
-                }
-            },
-            axis: {
-                x: { //magnitude
-                    type: 'category',
-                },
-                y: { //count
-                    tick: {
-                        values: [10, 20, 30, 40]
-                    }
-                }
-            },
-            legend: {
-                show: false
-            },
-            bindto: "#fires-chart" //bind the chart to the place holder element "earthquake-chart".
-        // });
 
+                },
+            onclick: function (d, i) {
+                console.log("onclick", d, i);
+                },
+            },
+            bindto: "#fires-chart"
         })
 
         map.on('idle', () => { //simplifying the function statement: arrow with brackets to define a function
@@ -166,7 +153,6 @@ async function geojsonFetch() {
 geojsonFetch();
 
 function calFires(currentFires, currentMapBounds) {
-    console.log("hi")
     let fireClasses = {
         10: 0,
         50: 0,
@@ -190,5 +176,5 @@ reset.addEventListener('click', event => {
         center: [-120.7401, 47.7511]
     })
 
-    map.setFilter('fires-point', null);
+    map.setFilter('fire-point', null);
 })
