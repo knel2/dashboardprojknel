@@ -18,19 +18,27 @@ const grades = [10,50,300],
 colors = ['rgb(208,209,230)', 'rgb(103,169,207)', 'rgb(1,108,89)'],
 radii = [5, 10, 20]
 
-// const legend = document.getElementById('legend');
+const legend = document.getElementById('legend');
 
-// let labels = ['<strong>Magnitude</strong>'],vbreak;
+let labels = ['<strong>Magnitude</strong>'],
+    vbreak;
 
-// for(var i = 0; i < grades.length; i++) {
+for(var i = 0; i < grades.length; i++) {
 
-//     vbreak = grades[i];
-//     dot_radii = 2 * radii[i];
-//     labels.push(
-//         '<p class = "break"><i class = "dot" style = "background"' + colors[i] + '; width: ' + dot_radii +
-//         'px; height: ' + dot_radii + 'px; "> <span class = "dot-label" style = "top: ' + dot_radii / 2 + 'px;"' + vbreak + '</span></p>');
+    vbreak = grades[i];
+    dot_radii = 2 * radii[i];
+    console.log("hello")
+    labels.push(
+        '<p class = "break"><i class = "dot" style = "background"' + colors[i] + '; width: ' + dot_radii +
+        'px; height: ' +
+        dot_radii + 'px; "> <span class = "dot-label" style = "top: ' + dot_radii / 2 + 'px;"' + vbreak +
+        '</span></p>');
 
-//     }
+    }
+
+    legend.innerHTML = labels
+
+    console.log(labels)
 
 async function geojsonFetch() {
     let response;
@@ -102,8 +110,7 @@ async function geojsonFetch() {
         document.getElementById('fires-count').innerHTML = numFires
         y = Object.keys(magnitudes);
         y.unshift('#')
-        console.log(x)
-        console.log(y);
+
         firesChart = c3.generate({
 
             size: {

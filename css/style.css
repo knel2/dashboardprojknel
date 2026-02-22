@@ -20,6 +20,10 @@
     font-family: 'Open Sans', sans-serif;
 }
 
+#legend a {
+  color:blueviolet;
+}
+
 #side-bar {
   z-index: 1000;
   position: absolute;
